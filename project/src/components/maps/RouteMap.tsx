@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 
 interface RouteMapProps {
@@ -19,6 +19,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination, polyline, clas
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const routeRef = useRef<google.maps.Polyline | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   useEffect(() => {
     const loader = new Loader({
@@ -85,6 +86,8 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination, polyline, clas
         route.setMap(map);
         routeRef.current = route;
       }
+    }).catch(error => {
+      setMapError(error.message);
     });
 
     return () => {
@@ -94,6 +97,10 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination, polyline, clas
       markersRef.current.forEach(marker => marker.setMap(null));
     };
   }, [origin, destination, polyline]);
+
+  if (mapError) {
+    return <div className="text-red-500">Failed to load map: {mapError}</div>;
+  }
 
   return (
     <div 

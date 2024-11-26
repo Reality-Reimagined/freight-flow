@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import LocationInput from '../maps/LocationInput';
 import { useAuthStore } from '../../store/authStore';
 import RouteMap from '../maps/RouteMap';
+import { useMutation } from '@tanstack/react-query';
 
 interface LoadFormData {
   origin: string;
@@ -147,23 +148,18 @@ const PostLoad = () => {
     });
   };
 
+  const mutation = useMutation({
+    mutationFn: (newLoad: LoadFormData) => {
+      return supabase.from('loads').insert([newLoad]).select().single();
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { data: newLoad, error } = await supabase
-        .from('loads')
-        .insert([
-          {
-            ...formData,
-            user_id: user?.id,
-            status: 'PENDING',
-            created_at: new Date().toISOString(),
-          }
-        ])
-        .select()
-        .single();
+      const { data: newLoad, error } = await mutation.mutateAsync(formData);
 
       if (error) throw error;
 

@@ -167,6 +167,14 @@ const LocationInput: React.FC<LocationInputProps> = ({
     onChange({ address: newValue });
   };
 
+  // Add proper cleanup for Google Maps listeners
+  useEffect(() => {
+    const listener = autocompleteRef.current?.addListener('place_changed', handlePlaceSelect);
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
+  }, []);
+
   return (
     <div className="relative">
       <input
